@@ -108,7 +108,7 @@ train_loader = torch.utils.data.DataLoader(
 test_loader = torch.utils.data.DataLoader(
 	test_dataset,
 	batch_size=8,
-	shuffle=True,
+	shuffle=False,
 	num_workers=0
 )
 
@@ -130,8 +130,8 @@ https://www.youtube.com/watch?v=yofjFQddwHE
 model = models.resnet18(pretrained=True)
 
 '''
-ReNet model has fully connect (fc) final layer with 512 as `in_features`
-and we'll be training for x and y regression thus `out_features` as 2.
+ResNet model has fully connect (fc) final layer with 512 as `in_features`
+and we'll be training for x and y regression thus `out_features` is 2.
 
 Finally, we transfer our model for execution on CPU. If you have installed
 PyTorch with GPU support, it is better to execute on GPU.

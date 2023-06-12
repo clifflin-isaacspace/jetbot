@@ -3,17 +3,17 @@
 '''
 If you can run through the basic motion programs, hopefully you're
 enjoying how easy it can be to make your JetBot move around! That's
-very cool! But what's even cooler, is makeing JetBot move around by
+very cool! But what's even cooler, is making JetBot move around by
 itself!
 
 This is a super hard task. That has many different approaches, but
 the whole problem is usually broken down into easier sub-problems.
-It could be argued that one of the most improtant sub-problems to 
+It could be argued that one of the most important sub-problems to 
 solve, is the problem of preventing the robot entering dangerous
 situations! We're calling this "collision avoidance".
 
 In this set of programs, we're going to attempt to solve the problem
-using deep learning and a single, very versatile, sensor: the caemra.
+using deep learning and a single, very versatile, sensor: the camera.
 You'll see how with a neural network, camera, and NVIDIA Jetson Nano,
 we can teach the robot a very useful behavior!
 
@@ -28,11 +28,11 @@ But, we can prevent the robot from entering these scenarios itself.
 
 The way we'll do this is super simple:
 
-First, we'll maunlly place the robot in scenarios where it's 
+First, we'll manually place the robot in scenarios where it's 
 "safety bubble" is violated, and label these scenarios `blocked`.
 We save a snapshot of what the robot sees along with this label.
 
-Second, we'll manully place the robot in scenarios where it's safe
+Second, we'll manually place the robot in scenarios where it's safe
 to move forward a bit, and label these scenarios `free`. Likewise, 
 we save a snapshot along with this label.
 
@@ -131,7 +131,7 @@ while True:
 	the function `cv2.imshow` can show the image on the window. 
 	In the following, the image will be drawn in a window named 
 	'camera'. The function `cv2.waitKey` block the code for certain
-	preciod to wait a key event and also swap the buffer to show 
+	period to wait a key event and also swap the buffer to show 
 	the image. For example, `cv2.waitKey(1)` will block the code 
 	for 1 millisecond and show the image on the window.
 	'''

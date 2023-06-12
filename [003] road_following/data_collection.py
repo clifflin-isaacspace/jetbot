@@ -5,8 +5,8 @@ If you've run through the collision avoidance sample, you should
 be familiar following three steps:
 	1. Data collection
 	2. Training
-	3. Deyployment
-Here, we'll fo the same exact thing! Except, instead of classification,
+	3. Deployment
+Here, we'll do the same exact thing! Except, instead of classification,
 you'll learn a different fundamental technique, 'regression', that
 we'll use to enable JetBot to follow a road (or really, any path or 
 target point).
@@ -26,7 +26,7 @@ proportional to the angle, so our controller will work fine).
 
 So, how do you decide exactly where to place the target for this example?
 Here is a guide we think help
-	1. Look at the lvie video feed from the camera
+	1. Look at the live video feed from the camera
 	2. Imagine the path that the robot should follow (try to approximate
 	   the distance it needs to avoid running off road etc.)
 	3. Place the target as far along this path as it can go so that the
@@ -38,7 +38,7 @@ Assuming our deep learning model works as intended, these labeling guidelines
 should ensure the following:
 	1. The robot can safely travel directly towards the target (without going
 	   out of bounds etc.)
-	2. The target will continously progress along our imagined path.
+	2. The target will continuously progress along our imagined path.
 What we get is a 'carrot on a stick' that moves along our desired trajectory.
 Deep learning decides where to place the carrot, and JetBot just follows it.
 '''
@@ -164,8 +164,6 @@ while True:
 	'''
 	Like basic_motion_003.py, we use keyboard to control the robot.
 	Besides, we can also use keyboard to label the image and save it.
-	We use key 'f' for the label of free and key 'b' for the label 
-	of blocked.
 	'''
 	if   (keyboard.is_pressed(' ')):
 		break

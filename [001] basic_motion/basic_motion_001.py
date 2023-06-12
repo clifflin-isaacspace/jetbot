@@ -18,7 +18,7 @@ robot = Robot()
 '''
 Now that we've created our `Robot` instance we named "robot", we can
 use this instance to control the robot. To make the robot spin 
-counterclockwiseat 30% of it's max speed, we can call the following, 
+counterclockwise at 30% of it's max speed, we can call the following, 
 and the robot can spin counterclockwise.
 '''
 robot.left(speed=0.3)

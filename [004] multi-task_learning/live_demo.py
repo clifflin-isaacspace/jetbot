@@ -1,4 +1,4 @@
-# Road Following - Live Demo
+# Multi-task Learning - Live Demo
 
 '''
 First, we import all packages we need.
@@ -15,15 +15,15 @@ from jetbot import Robot, Camera
 '''
 Load the trained model
 
-We'll assume that you've already had `best_steering_model_xy.pth`. Now, 
+We'll assume that you've already had `best_multi_task_model_xy.pth`. Now, 
 you should initialize the PyTorch model and load the trained wights from 
-`best_steering_model_xy.pth`.
+`best_multi_task_model_xy.pth`.
 '''
 
 model = torchvision.models.resnet18(pretrained=False)
-model.fc = torch.nn.Linear(512, 2)
+model.fc = torch.nn.Linear(512, 8)
 
-model.load_state_dict(torch.load('best_steering_model_xy.pth'))
+model.load_state_dict(torch.load('best_multi_task_model_xy.pth'))
 
 '''
 Similarly, we use CPU to run the model.
@@ -74,7 +74,7 @@ Now, we'll define some parameters to control JetBot:
 	2. Steering Gain Control (steering_gain and steering_dgain): If you see 
 	   JetBot is wobbling, you need to reduce "steering_gain" or "steering_dgain" 
 	   till it is smooth.
-	3. Steering Bais Control (steering_bias): If you see JetBot is biased
+	3. Steering Bias Control (steering_bias): If you see JetBot is biased
 	   toward extreme right or extreme left side of the track, you should
 	   control this variable till JetBot start following line or track in
 	   the center. This accounts for motor biases as well as camera offsets.
@@ -86,11 +86,15 @@ steering_bias = 0.0
 
 '''
 Next, we can create an infinity loop for doing the routine of the robot.
-The routine will fo the following steps:
+The routine will do the following steps:
 	1. Pre-process the camera image.
 	2. Execute the neural network.
 	3. Compute the approximate steering value.
-	4. Control the motors using proportional / derivative control (PD control)
+	4. Get the probability of blocked image.
+	5. Get the classification result of traffic light color.
+	5. If the probability of blocked image is less than 0.5 or the traffic light
+	   color is red or yellow, motors should stop. Otherwise, control the motors 
+	   using proportional / derivative control (PD control)
 '''
 
 '''
@@ -115,13 +119,15 @@ angle_last = 0.0
 
 while True:
 
-	'''
-	We copy the image from camera since we want to draw some information
-	on the image and do not want to change the original one.
-	'''
 	image = camera.value.copy()
 
-	xy = model(preprocess(image)).detach().float().cpu().numpy().flatten()
+	'''
+	Split the model outputs.
+	'''
+	outputs = torch.split(model(preprocess(image)), [ 2, 2, 4 ], dim=1)
+
+	xy = outputs[0].detach().float().cpu().numpy().flatten()
+
 	x = xy[0]
 	y = (0.5 - xy[1]) / 2.0
 
@@ -131,8 +137,46 @@ while True:
 
 	steering = pid + steering_bias
 
-	robot.left_motor.value = max(min(speed + steering, 1.0), 0.0)
-	robot.right_motor.value = max(min(speed - steering, 1.0), 0.0)
+	'''
+	Compute the probability of blocked image.
+	'''
+	p = F.softmax(outputs[1], dim=1)
+	prob_blocked = float(p.flatten()[1])
+
+	'''
+	Get the traffic light color classification result.
+	0: red
+	1: yellow
+	2: green
+	3: no traffic light
+	'''
+	p = F.softmax(outputs[2], dim=1)
+	traffic_light = np.argmax(p.detach().float().cpu().numpy().flatten())
+
+	if (prob_blocked > 0.5 or traffic_light == 0 or traffic_light == 1):
+		robot.left_motor.value = 0.0
+		robot.right_motor.value = 0.0
+	else:
+		robot.left_motor.value = max(min(speed + steering, 1.0), 0.0)
+		robot.right_motor.value = max(min(speed - steering, 1.0), 0.0)
+	
+	'''
+	Show the result of free-blocked classification.
+	'''
+	if (prob_blocked < 0.5):
+		cv2.putText(image, 'Free', (10, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
+	else:
+		cv2.putText(image, 'Blocked', (10, image.shape[0] - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 2)
+
+	'''
+	Show the result of traffic light color classification.
+	'''
+	if (traffic_light == 0):
+		cv2.putText(image, 'Red', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2, cv2.LINE_AA)
+	elif (traffic_light == 1):
+		cv2.putText(image, 'Yellow', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)	
+	elif (traffic_light == 2):
+		cv2.putText(image, 'Green', (10, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 0), 2, cv2.LINE_AA)
 
 	draw_steering(image, angle)
 
